@@ -1,0 +1,2 @@
+# magic-dice
+magicdice
