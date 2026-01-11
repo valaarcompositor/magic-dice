@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Magic Dice</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  background: #2b1d0e;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.app {
+  max-width: 420px;
+  margin: auto;
+  padding: 16px;
+}
+
+h1 {
+  text-align: center;
+  color: #facc15;
+  margin-bottom: 6px;
+}
+
+.counter {
+  text-align: center;
+  color: #fde68a;
+  margin-bottom: 14px;
+}
+
+.dice-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.dice {
+  width: 80px;
+  height: 80px;
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  grid-template-rows: repeat(3,1fr);
+  padding: 8px;
+}
+
+.blue { background:#1e40af; }
+.red { background:#991b1b; }
+
+.pip {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0;
+  margin: auto;
+}
+
+.show { opacity: 1; }
+
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  touch-action: manipulation;
+}
+
+.roll {
+  background: #d97706;
+  color: white;
+}
+
+.reset {
+  background: #444;
+  color: white;
+}
+
+.log {
+  background: #fef3c7;
+  padding: 12px;
+  border-radius: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+}
+
+.spin {
+  animation: spin .4s linear;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <h1>✨ Magic Dice ✨</h1>
+  <div class="counter">Tirada <span id="count">0</span> / 100</div>
+
+  <div class="dice-row">
+    <div id="blue" class="dice blue"></div>
+    <div id="red" class="dice red"></div>
+  </div>
+
+  <button id="roll" class="roll">🎲 Lanzar Dados</button>
+
+  <div class="log">
+    <strong>📜 Registro</strong>
+    <ul id="log"></ul>
+    <button id="reset" class="reset">🔄 Reiniciar</button>
+  </div>
+</div>
+
+<script>
+const blue = document.getElementById("blue");
+const red = document.getElementById("red");
+const rollBtn = document.getElementById("roll");
+const resetBtn = document.getElementById("reset");
+const logEl = document.getElementById("log");
+const countEl = document.getElementById("count");
+
+let rolls = 0;
+let lastSum = null;
+const MAX = 100;
+
+const faces = {
+  1:[4],2:[0,8],3:[0,4,8],
+  4:[0,2,6,8],5:[0,2,4,6,8],
+  6:[0,2,3,5,6,8]
+};
+
+function draw(die,val){
+  die.innerHTML="";
+  for(let i=0;i<9;i++){
+    const p=document.createElement("div");
+    p.className="pip";
+    if(faces[val].includes(i))p.classList.add("show");
+    die.appendChild(p);
+  }
+}
+
+function rnd(){ return Math.floor(Math.random()*6)+1 }
+
+rollBtn.onclick=()=>{
+  if(rolls>=MAX){
+    rollBtn.disabled=true;
+    rollBtn.textContent="🛑 Límite alcanzado";
+    return;
+  }
+
+  rolls++;
+  countEl.textContent=rolls;
+
+  const a=rnd(), b=rnd(), sum=a+b;
+
+  blue.classList.add("spin");
+  red.classList.add("spin");
+
+  setTimeout(()=>{
+    blue.classList.remove("spin");
+    red.classList.remove("spin");
+
+    draw(blue,a);
+    draw(red,b);
+
+    let mark="";
+    if(lastSum!==null){
+      mark=sum>lastSum?" 🏆":sum<lastSum?" 💀":" ⚖️";
+    }
+    lastSum=sum;
+
+    const li=document.createElement("li");
+    li.textContent=`Tirada ${rolls}: ${a} + ${b} = ${sum}${mark}`;
+    logEl.prepend(li);
+  },300);
+};
+
+resetBtn.onclick=()=>{
+  rolls=0;
+  lastSum=null;
+  countEl.textContent="0";
+  logEl.innerHTML="";
+  rollBtn.disabled=false;
+  rollBtn.textContent="🎲 Lanzar Dados";
+};
+
+draw(blue,1);
+draw(red,1);
+</script>
+
+</body>
+</html>
